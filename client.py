@@ -1,7 +1,7 @@
 import zmq
 import json
-import json_coder.py.json_coder as json_coder
-from json_coder.py.messagetypes import *
+from json_coder.py import CustomEncoder, decode_object
+from json_coder.py.messages import ServiceTask, CNNTask, CNNAnswer
 import cv2
 
 context = zmq.Context()
@@ -13,10 +13,10 @@ socket.connect("tcp://localhost:5554")
 
 
 kill_task = ServiceTask("capture")
-j_str = json.dumps(kill_task, cls=json_coder.coder.CustomEncoder)
+j_str = json.dumps(kill_task, cls=CustomEncoder)
 socket.send(bytes(j_str, 'utf-8'))
 capture_answer_str = socket.recv().decode('utf-8')
-j_cap_answ = json.loads(capture_answer_str, object_hook=json_coder.decoder.decode_object)
+j_cap_answ = json.loads(capture_answer_str, object_hook=decode_object)
 print(j_cap_answ)
 if isinstance(j_cap_answ, CNNAnswer):
 	img = j_cap_answ.image
@@ -27,12 +27,12 @@ elif isinstance(j_cap_answ, ServiceTask):
 	print(srv_err.command)
 
 kill_task = ServiceTask("kill")
-j_str = json.dumps(kill_task, cls=json_coder.coder.CustomEncoder)
+j_str = json.dumps(kill_task, cls=CustomEncoder)
 socket.send(bytes(j_str, 'utf-8'))
 
 print("wait for last resp")
 capture_answer_str = socket.recv().decode('utf-8')
-j_cap_answ = json.loads(capture_answer_str, object_hook=json_coder.decoder.decode_object)
+j_cap_answ = json.loads(capture_answer_str, object_hook=decode_object)
 print(j_cap_answ)
 if isinstance(j_cap_answ, CNNAnswer):
 	img = j_cap_answ.image
